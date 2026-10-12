@@ -398,7 +398,7 @@ async function undoLastAction(): Promise<ActionResult> {
             const created = await chrome.tabs.create({
               windowId: destination,
               url: saved.url,
-              index: saved.index,
+              index: saved.group ? -1 : saved.index,
               pinned: saved.pinned,
               active: false,
             });
@@ -419,7 +419,8 @@ async function undoLastAction(): Promise<ActionResult> {
           } else
             await chrome.tabs.move(saved.id, {
               windowId: destination,
-              index: saved.index,
+              // Insert outside native groups, then restore group membership/order.
+              index: -1,
             });
           await chrome.tabs.update(saved.id, { pinned: saved.pinned });
         }
@@ -482,6 +483,15 @@ async function undoLastAction(): Promise<ActionResult> {
       groupWarning = true;
     }
   }
+  let positionWarning = false;
+  for (const item of restored) {
+    if (record.kind !== "move" && !item.saved.group) continue;
+    try {
+      await chrome.tabs.move(item.id, { index: item.saved.index });
+    } catch {
+      positionWarning = true;
+    }
+  }
   if (pending.length)
     await chrome.storage.session.set({
       bulkUndo: { ...record, tabs: pending },
@@ -491,5 +501,7 @@ async function undoLastAction(): Promise<ActionResult> {
   if (failures.length) result.message += ` · ${failures[0]}`;
   if (groupWarning)
     result.message += " · some native groups could not be restored";
+  if (positionWarning)
+    result.message += " · some tab positions could not be restored";
   return result;
 }

@@ -57,6 +57,15 @@ test("bulk pin/undo, URL protection, guarded close, and close undo use actual br
     .getByRole("button", { name: "Undo close 2 tabs", exact: true })
     .click();
   await expect.poll(async () => (await getTabs()).length).toBe(3);
+  // Chrome-created targets can navigate before Playwright attaches request routing.
+  // Reload only test fixture targets so their deterministic test pages are available.
+  for (const target of context.pages()) {
+    if (
+      target.url().startsWith("https://aether-fixture.test/") &&
+      !(await target.title()).startsWith("Aether fixture")
+    )
+      await target.reload();
+  }
   await expect
     .poll(async () =>
       (await getTabs()).every(

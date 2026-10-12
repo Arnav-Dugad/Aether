@@ -78,12 +78,14 @@ beforeEach(async () => {
       },
       move: async (
         id: number,
-        options: { windowId: number; index: number },
+        options: { windowId?: number; index: number },
       ) => {
         const t = tabs.find((t) => t.id === id)!;
-        t.windowId = options.windowId;
+        if (options.windowId !== undefined && options.windowId !== t.windowId) {
+          t.windowId = options.windowId;
+          t.groupId = -1;
+        }
         t.index = options.index;
-        t.groupId = -1;
         return t;
       },
       group: async (options: {
@@ -220,4 +222,32 @@ it("refuses private-window destinations and assignments to archived or missing w
   session.tabAssignments = { "900": "old" };
   await executeTabAction({ kind: "assign", ids: [900], workspaceId: null });
   expect(session.tabAssignments).toEqual({});
+});
+
+it("rejoins native group before inserting into its original middle position", async () => {
+  groups.set(8, { id: 8, windowId: 1, title: "Research", color: "blue" });
+  for (const tab of tabs) tab.groupId = 8;
+  await executeTabAction({ kind: "move", ids: [2], windowId: null });
+  const move = chrome.tabs.move;
+  const guarded = vi
+    .spyOn(chrome.tabs, "move")
+    .mockImplementation(async (...args) => {
+      const [id, options] = args;
+      const tabId = Array.isArray(id) ? id[0] : id;
+      const tab = tabs.find((t) => t.id === tabId)!;
+      if (
+        options.windowId !== undefined &&
+        options.windowId !== tab.windowId &&
+        options.index >= 0
+      )
+        throw new Error("would disrupt group continuity");
+      return move(id, options);
+    });
+  const result = await executeTabAction({ kind: "undo" });
+  expect(result.failed).toBe(0);
+  expect(tabs[1]!.windowId).toBe(1);
+  expect(tabs[1]!.groupId).toBe(8);
+  expect(tabs[1]!.index).toBe(1);
+  expect(guarded).toHaveBeenNthCalledWith(1, 2, { windowId: 1, index: -1 });
+  expect(guarded).toHaveBeenLastCalledWith(2, { index: 1 });
 });
