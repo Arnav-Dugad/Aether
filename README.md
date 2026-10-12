@@ -28,7 +28,7 @@ Screenshots show the real built UI served locally for layout verification. Brows
 
 ## Install
 
-1. Download `aether-chromium-v0.1.0.zip` from [Releases](https://github.com/Arnav-Dugad/Aether/releases).
+1. Download `aether-chromium-v0.1.1.zip` from [Releases](https://github.com/Arnav-Dugad/Aether/releases).
 2. Extract it to a permanent folder.
 3. Open `chrome://extensions`, `edge://extensions`, or `brave://extensions`.
 4. Enable **Developer mode**, choose **Load unpacked**, and select the extracted folder containing `manifest.json`.

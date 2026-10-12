@@ -1,3 +1,4 @@
+import packageInfo from "../../package.json";
 import { useState } from "react";
 import { RefreshCw, Download, CircleCheck, Github } from "lucide-react";
 import { z } from "zod";
@@ -36,7 +37,9 @@ export function Updates({ run }: FeatureProps) {
     null,
   );
   const [checked, setChecked] = useState("");
-  const current = installed ? chrome.runtime.getManifest().version : "0.1.0";
+  const current = installed
+    ? chrome.runtime.getManifest().version
+    : packageInfo.version;
   async function check() {
     if (!installed) throw new Error("Install Aether to check releases.");
     const permitted =

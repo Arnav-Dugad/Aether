@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Guard appearance state against stale reads during rapid preference changes.
+- Keep immediate switch feedback and serialized local writes.
+- Ship the latest code as a separate patch package without replacing the first release.
+
 ## 0.1.0
 
 Initial functional Aether foundation in the existing `Arnav-Dugad/Aether` repository.

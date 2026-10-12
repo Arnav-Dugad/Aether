@@ -21,6 +21,7 @@ import {
   Sparkles,
   CircleHelp,
 } from "lucide-react";
+import packageInfo from "../package.json";
 import { accentColors } from "./lib/colors";
 import { useAether } from "./lib/useAether";
 import { installed, center, sidePanel } from "./lib/browser";
@@ -371,7 +372,12 @@ export default function App({
           <footer className="page-footer">
             <span>Aether</span>
             <span>A little clarity goes a long way.</span>
-            <span>v0.1.0</span>
+            <span>
+              v
+              {installed
+                ? chrome.runtime.getManifest().version
+                : packageInfo.version}
+            </span>
           </footer>
         </div>
       </main>

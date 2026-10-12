@@ -5,7 +5,7 @@ export default defineConfig({
     name: "Aether — Your browser. Elevated.",
     description:
       "A private, local-first browser command center with classic frosted glass.",
-    version: "0.1.0",
+    version: "0.1.1",
     minimum_chrome_version: "116",
     permissions: [
       "tabs",
