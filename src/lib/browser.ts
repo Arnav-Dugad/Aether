@@ -1,8 +1,10 @@
+import { assignTabs } from "./tabActions";
 import {
   configSchema,
   defaults,
   safeUrl,
   serializeTabs,
+  mergeConfig,
   type Config,
   type SavedTab,
 } from "./model";
@@ -23,7 +25,16 @@ export async function setConfig(config: Config): Promise<void> {
 }
 export function patchStoredConfig(patch: Partial<Config>): Promise<Config> {
   const write = configWrites.then(async () => {
-    const next = configSchema.parse({ ...(await getConfig()), ...patch });
+    if (installed) {
+      const response = (await chrome.runtime.sendMessage({
+        type: "PATCH_CONFIG",
+        patch,
+      })) as { ok: boolean; config?: Config; error?: string };
+      if (!response?.ok || !response.config)
+        throw new Error(response?.error || "Could not save preferences.");
+      return configSchema.parse(response.config);
+    }
+    const next = mergeConfig(await getConfig(), patch);
     await setConfig(next);
     return next;
   });
@@ -49,7 +60,11 @@ export async function openUrl(value: string): Promise<void> {
   if (installed) await chrome.tabs.create({ url });
   else window.open(url, "_blank", "noopener,noreferrer");
 }
-export async function restoreTabs(tabs: SavedTab[]): Promise<number> {
+export async function restoreTabs(
+  tabs: SavedTab[],
+  onProgress?: (opened: number, total: number) => void,
+  workspaceId?: string,
+): Promise<number> {
   if (!installed) throw new Error("Install Aether to restore browser tabs.");
   const groups = new Map<number, SavedTab[]>();
   for (const tab of tabs) {
@@ -57,6 +72,9 @@ export async function restoreTabs(tabs: SavedTab[]): Promise<number> {
     groups.set(tab.window, [...(groups.get(tab.window) ?? []), tab]);
   }
   let opened = 0;
+  const total = [...groups.values()].reduce((n, group) => n + group.length, 0);
+  const createdIds: number[] = [];
+  onProgress?.(0, total);
   for (const group of groups.values()) {
     const first = group[0];
     if (!first) continue;
@@ -66,16 +84,23 @@ export async function restoreTabs(tabs: SavedTab[]): Promise<number> {
     const initial = win.tabs?.[0];
     if (initial?.id !== undefined && first.pinned)
       await chrome.tabs.update(initial.id, { pinned: true });
+    if (initial?.id !== undefined) createdIds.push(initial.id);
     opened++;
+    onProgress?.(opened, total);
     for (const tab of group.slice(1)) {
-      await chrome.tabs.create({
+      const created = await chrome.tabs.create({
         windowId: win.id,
         url: tab.url,
         pinned: tab.pinned,
         active: false,
       });
+      createdIds.push(created.id!);
       opened++;
+      onProgress?.(opened, total);
     }
+  }
+  if (workspaceId && createdIds.length) {
+    await assignTabs(createdIds, workspaceId);
   }
   return opened;
 }

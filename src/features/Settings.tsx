@@ -222,6 +222,7 @@ export function Privacy({ a, run }: FeatureProps) {
       workspaces: a.workspaces,
       sessions: a.sessions,
       notes: a.notes,
+      tabMeta: a.tabMeta,
     };
     download("aether-backup.json", JSON.stringify(backup, null, 2));
   }
@@ -246,8 +247,9 @@ export function Privacy({ a, run }: FeatureProps) {
       </Panel>
       <Panel title="Keep a copy">
         <p className="muted">
-          Back up settings, workspaces, sessions, and notes. Activity and
-          completed focus history are excluded from this portable backup.
+          Back up settings, workspaces, sessions, notes, and tab
+          labels/protection. Activity and completed focus history are excluded
+          from this portable backup.
         </p>
         <div className="button-row">
           <button className="secondary" onClick={() => run(exportData)}>
@@ -327,10 +329,12 @@ export function Privacy({ a, run }: FeatureProps) {
                   db.workspaces,
                   db.sessions,
                   db.notes,
+                  db.tabMeta,
                   async () => {
                     await db.workspaces.bulkPut(pending.workspaces);
                     await db.sessions.bulkPut(pending.sessions);
                     await db.notes.bulkPut(pending.notes);
+                    await db.tabMeta.bulkPut(pending.tabMeta);
                   },
                 );
                 await a.patchConfig(pending.config);

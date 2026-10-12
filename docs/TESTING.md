@@ -21,3 +21,9 @@ Not tested: Edge, Brave, Vivaldi, Opera, Windows 11, live releases on multiple i
 ## Native CI findings and repairs
 
 The first native run successfully loaded the extension and passed notes/keyboard search and the four-surface accessibility/layout suite. It exposed delayed controlled-switch feedback and a changing navigation accessible name. Appearance changes now update immediately and persist through a serialized write queue; a regression test verifies concurrent preferences. Navigation controls have stable labels. The [native rerun](https://github.com/Arnav-Dugad/Aether/actions/runs/38287956604) passed all four tests, and the release job succeeded. It validated persisted themes/opaque settings, real browser tabs and workspace restoration, notes/keyboard search, and all four surfaces with axe checks. The 0.1.1 patch reruns the same gated suite before publishing.
+
+## 0.2.0 validation
+
+The extended suite covers the v1-to-v2 migration, tab protection/safety and disappeared IDs, native-group/move/close undo, ownership, note write ordering/commit feedback/deletion, incremental search, valid calendar dates and view imports. Native tests additionally exercise bulk actions, workspace editing/archives/templates, reversible restore selection, autosave/Escape/delete, cross-surface preferences, multiple tab layouts, and command labels.
+
+The [synthetic benchmark](benchmark-results.json) uses 10/100/500/1,000 fixture records exclusively in test code. The 1,000-record query median was 5.343 ms, with 14 initially rendered virtual rows and 14 at the end, and no horizontal overflow. Browser layout readiness was 279.7 ms in the Linux Chromium 138 container. This does not measure a browser with 1,000 actual loaded pages or certify Windows performance. Native CI results are authoritative for the full extension test suite.

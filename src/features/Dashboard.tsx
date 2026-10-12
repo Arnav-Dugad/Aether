@@ -80,20 +80,26 @@ export function Dashboard({
           </LinkButton>
         }
       >
-        {a.workspaces.length ? (
+        {a.workspaces.filter((row) => !row.archived && !row.template).length ? (
           <div className="workspace-shortcuts">
-            {a.workspaces.slice(0, 3).map((row) => (
-              <button key={row.id} onClick={() => navigate?.("workspaces")}>
-                <span className="collection-icon" style={{ color: row.color }}>
-                  <Briefcase size={18} />
-                </span>
-                <span>
-                  <strong>{row.name}</strong>
-                  <small>{row.tabs.length} tabs</small>
-                </span>
-                <ArrowUpRight size={16} />
-              </button>
-            ))}
+            {a.workspaces
+              .filter((row) => !row.archived && !row.template)
+              .slice(0, 3)
+              .map((row) => (
+                <button key={row.id} onClick={() => navigate?.("workspaces")}>
+                  <span
+                    className="collection-icon"
+                    style={{ color: row.color }}
+                  >
+                    <Briefcase size={18} />
+                  </span>
+                  <span>
+                    <strong>{row.name}</strong>
+                    <small>{row.tabs.length} tabs</small>
+                  </span>
+                  <ArrowUpRight size={16} />
+                </button>
+              ))}
           </div>
         ) : (
           <Empty

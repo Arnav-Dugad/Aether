@@ -1,6 +1,6 @@
 # Security
 
-Use current Chromium browsers and official release packages. This release has no content scripts, remote executable code, `eval`, tokens, or mandatory external services. Its extension CSP permits local scripts only. Imported backups are size-bounded and schema-validated. Links are restricted to HTTP(S). Untrusted text is rendered through React; release notes are plain text.
+Use current Chromium browsers and official release packages. This release has no content scripts, remote executable code, `eval`, tokens, or mandatory external services. Its extension CSP permits local scripts only. Imported backups are size-bounded and schema-validated. Links are restricted to HTTP(S). Untrusted text is rendered through React; release notes are plain text. Notes use a safe React Markdown subset without executable HTML. Worker mutation/preference messages require the extension’s own sender identity and URL, are schema-validated, and are serialized; protections are rechecked just before destructive tab actions.
 
 Permissions:
 

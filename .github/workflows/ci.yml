@@ -55,4 +55,4 @@ jobs:
           cd dist
           sha256sum "aether-source-$tag.zip" >> SHA256SUMS.txt
           cd ..
-          gh release create "$tag" --target "$GITHUB_SHA" --title "Aether $tag — Frosted glass foundation" --notes-file CHANGELOG.md dist/*
+          gh release create "$tag" --target "$GITHUB_SHA" --title "Aether $tag — Tabs, workspaces & local productivity" --notes-file CHANGELOG.md dist/*

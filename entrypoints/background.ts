@@ -1,7 +1,13 @@
 import { defineBackground } from "wxt/utils/define-background";
 import { db } from "../src/lib/db";
-import { getConfig, getTabs, saveSession } from "../src/lib/browser";
-import { domain, safeUrl, type FocusState } from "../src/lib/model";
+import { getConfig, getTabs, saveSession, setConfig } from "../src/lib/browser";
+import {
+  domain,
+  safeUrl,
+  mergeConfig,
+  type FocusState,
+} from "../src/lib/model";
+import { executeTabAction } from "../src/lib/tabActions";
 import { activitySlices, type ActiveState } from "../src/lib/activity";
 export default defineBackground(() => {
   let queue = Promise.resolve();
@@ -70,6 +76,19 @@ export default defineBackground(() => {
     void chrome.alarms.create("snapshot", { periodInMinutes: 15 });
     reconcile(true);
   });
+  chrome.tabs.onRemoved.addListener((id) => {
+    queue = queue
+      .then(async () => {
+        const data = await chrome.storage.session.get("tabAssignments");
+        const assignments = (data.tabAssignments ?? {}) as Record<
+          string,
+          string
+        >;
+        delete assignments[String(id)];
+        await chrome.storage.session.set({ tabAssignments: assignments });
+      })
+      .catch(() => {});
+  });
   chrome.tabs.onActivated.addListener(() => reconcile());
   chrome.tabs.onUpdated.addListener((_id, change) => {
     if (change.url) reconcile();
@@ -119,7 +138,9 @@ export default defineBackground(() => {
         !message ||
         typeof message !== "object" ||
         !("type" in message) ||
-        message.type !== "CLEAR_DATA"
+        !["CLEAR_DATA", "TAB_ACTION", "PATCH_CONFIG"].includes(
+          String(message.type),
+        )
       )
         return false;
       if (
@@ -129,11 +150,28 @@ export default defineBackground(() => {
         return false;
       queue = queue
         .then(async () => {
+          if (message.type === "PATCH_CONFIG") {
+            const config = mergeConfig(
+              await getConfig(),
+              "patch" in message ? message.patch : null,
+            );
+            await setConfig(config);
+            sendResponse({ ok: true, config });
+            return;
+          }
+          if (message.type === "TAB_ACTION") {
+            const result = await executeTabAction(
+              "action" in message ? message.action : null,
+            );
+            sendResponse({ ok: true, result });
+            return;
+          }
           await chrome.alarms.clear("focus");
           await db.transaction("rw", db.tables, async () => {
             for (const table of db.tables) await table.clear();
           });
           await chrome.storage.local.clear();
+          await chrome.storage.session.clear();
           await chrome.action.setBadgeText({ text: "" });
           sendResponse({ ok: true });
         })

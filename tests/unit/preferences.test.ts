@@ -3,7 +3,16 @@ afterEach(() => vi.unstubAllGlobals());
 it("serializes concurrent appearance changes without losing either preference", async () => {
   let saved: Record<string, unknown> = {};
   vi.stubGlobal("chrome", {
-    runtime: { id: "aether-test" },
+    runtime: {
+      id: "aether-test",
+      sendMessage: async (message: { patch: Record<string, unknown> }) => {
+        const { configSchema, mergeConfig } = await import(
+          "../../src/lib/model"
+        );
+        saved = mergeConfig(configSchema.parse(saved), message.patch);
+        return { ok: true, config: saved };
+      },
+    },
     storage: {
       local: {
         get: async () => ({ config: structuredClone(saved) }),

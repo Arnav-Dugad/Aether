@@ -16,26 +16,73 @@ export const savedTabSchema = z.object({
   window: z.number().int().nonnegative(),
 });
 export const workspaceSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1).max(160),
   name: z.string().min(1).max(80),
   color: z.string().regex(/^#[0-9a-f]{6}$/i),
   tabs: z.array(savedTabSchema).max(2000),
   createdAt: z.number(),
+  description: z.string().max(2000).default(""),
+  archived: z.boolean().default(false),
+  template: z.boolean().default(false),
 });
 export const sessionSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1).max(160),
   name: z.string().min(1).max(80),
   tabs: z.array(savedTabSchema).max(2000),
   createdAt: z.number(),
 });
 export const noteSchema = z.object({
-  id: z.string(),
+  id: z.string().min(1).max(160),
   title: z.string().max(120),
   body: z.string().max(100000),
   updatedAt: z.number(),
   done: z.boolean(),
+  workspaceId: z.string().max(160).nullable().default(null),
+  url: httpUrl.nullable().default(null),
+  priority: z.enum(["low", "normal", "high"]).default("normal"),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine((value) => {
+      const date = new Date(value + "T00:00:00Z");
+      return (
+        !Number.isNaN(date.getTime()) &&
+        date.toISOString().slice(0, 10) === value
+      );
+    }, "Use a valid calendar date")
+    .nullable()
+    .default(null),
 });
 export const configSchema = z.object({
+  activeWorkspaceId: z.string().max(160).nullable().default(null),
+  tabView: z.enum(["list", "cards", "domains", "windows"]).default("list"),
+  tabSort: z.enum(["browser", "title", "domain", "recent"]).default("browser"),
+  surfaceViews: z
+    .partialRecord(
+      z.enum(["app", "newtab", "popup", "sidepanel"]),
+      z.enum([
+        "dashboard",
+        "tabs",
+        "workspaces",
+        "sessions",
+        "notes",
+        "settings",
+        "privacy",
+        "analytics",
+        "focus",
+        "bookmarks",
+        "history",
+        "updates",
+        "performance",
+        "suggestions",
+      ]),
+    )
+    .default({
+      app: "dashboard",
+      newtab: "dashboard",
+      popup: "tabs",
+      sidepanel: "tabs",
+    }),
   theme: z
     .enum(["system", "light", "obsidian", "graphite", "oled"])
     .default("light"),
@@ -63,13 +110,22 @@ export const configSchema = z.object({
     )
     .default(["tabs", "workspaces", "focus", "notes", "activity", "sessions"]),
 });
+export const tabMetaSchema = z.object({
+  url: httpUrl,
+  label: z.string().max(80).default(""),
+  favorite: z.boolean().default(false),
+  protected: z.boolean().default(false),
+  updatedAt: z.number(),
+});
 export const backupSchema = z.object({
   version: z.literal(1),
   config: configSchema,
   workspaces: z.array(workspaceSchema).max(500),
   sessions: z.array(sessionSchema).max(500),
   notes: z.array(noteSchema).max(5000),
+  tabMeta: z.array(tabMetaSchema).max(20000).default([]),
 });
+export type TabMeta = z.infer<typeof tabMetaSchema>;
 export type Config = z.infer<typeof configSchema>;
 export type SavedTab = z.infer<typeof savedTabSchema>;
 export type Workspace = z.infer<typeof workspaceSchema>;
@@ -93,6 +149,28 @@ export interface FocusState {
   goal: string;
 }
 export const defaults = configSchema.parse({});
+export function mergeConfig(current: Config, patch: unknown): Config {
+  if (!patch || typeof patch !== "object" || Array.isArray(patch))
+    throw new Error("Invalid preference update.");
+  const values = patch as Record<string, unknown>;
+  if (Object.keys(values).some((key) => !Object.hasOwn(defaults, key)))
+    throw new Error("Unknown preference.");
+  if (
+    "surfaceViews" in values &&
+    (!values.surfaceViews ||
+      typeof values.surfaceViews !== "object" ||
+      Array.isArray(values.surfaceViews))
+  )
+    throw new Error("Invalid view preferences.");
+  return configSchema.parse({
+    ...current,
+    ...values,
+    surfaceViews: {
+      ...current.surfaceViews,
+      ...((values.surfaceViews ?? {}) as object),
+    },
+  });
+}
 export function safeUrl(value: string): string | null {
   const result = httpUrl.safeParse(value);
   return result.success ? result.data : null;

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+- Add virtualized multi-select tab management, list/card/domain/window layouts, sorting, URL labels/favorites/protection, guarded bulk pin/move/group/assign/close/discard, and supported undo.
+- Add editable workspaces, descriptions, archives/templates, explicit live tab ownership, selective restore with real progress, and session comparison.
+- Add serialized debounced note autosave, workspace/URL links, priority/dates, safe Markdown preview, and save-failure recovery.
+- Add incremental fuzzy command search across tabs, workspaces, sessions, notes, and already-permitted browser bookmarks/history; include prefixes and actual recent selections.
+- Persist per-surface navigation and serialize preference updates in the worker across open surfaces.
+- Migrate IndexedDB v1 to v2 without discarding saved work; retain compatibility with v1 portable backups and include URL metadata in exports.
+- Extend migration, safety, autosave, search, and native browser tests. Document a synthetic 1,000-record rendering benchmark separately from native browser tab testing.
+
 ## 0.1.1
 
 - Guard appearance state against stale reads during rapid preference changes.

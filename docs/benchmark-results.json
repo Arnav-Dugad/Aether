@@ -1,0 +1,36 @@
+{
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "kind": "Synthetic records; not a 1000-tab native browser test"
+  },
+  "datasets": [
+    {
+      "records": 10,
+      "queryMedianMs": 0.05,
+      "queryP95Ms": 0.092
+    },
+    {
+      "records": 100,
+      "queryMedianMs": 0.854,
+      "queryP95Ms": 1.202
+    },
+    {
+      "records": 500,
+      "queryMedianMs": 2.997,
+      "queryP95Ms": 3.566
+    },
+    {
+      "records": 1000,
+      "queryMedianMs": 5.343,
+      "queryP95Ms": 5.91
+    }
+  ],
+  "render": {
+    "records": 1000,
+    "readyMs": 279.7,
+    "initialRows": 14,
+    "endRows": 14,
+    "horizontalOverflow": false
+  }
+}

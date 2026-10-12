@@ -1,4 +1,11 @@
-import { Suspense, lazy, useEffect, useState, type CSSProperties } from "react";
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useState,
+  useRef,
+  type CSSProperties,
+} from "react";
 import {
   LayoutDashboard,
   Layers,
@@ -36,7 +43,7 @@ const Collections = lazy(() =>
   import("./features/Collections").then((m) => ({ default: m.Collections })),
 );
 const Notes = lazy(() =>
-  import("./features/Collections").then((m) => ({ default: m.Notes })),
+  import("./features/Notes").then((m) => ({ default: m.Notes })),
 );
 const SettingsPage = lazy(() =>
   import("./features/Settings").then((m) => ({ default: m.Settings })),
@@ -89,6 +96,7 @@ export default function App({
   surface?: "app" | "newtab" | "popup" | "sidepanel";
 }) {
   const a = useAether();
+  const restoredView = useRef(false);
   const [page, setPage] = useState(
     surface === "popup" || surface === "sidepanel" ? "tabs" : "dashboard",
   );
@@ -140,9 +148,20 @@ export default function App({
       })
       .finally(() => setBusy((v) => Math.max(0, v - 1)));
   }
+  useEffect(() => {
+    if (!a.ready || restoredView.current) return;
+    restoredView.current = true;
+    const saved = a.config.surfaceViews[surface];
+    if (saved && navigation.some((item) => item.id === saved)) setPage(saved);
+  }, [a.ready, a.config.surfaceViews, surface]);
   function navigate(value: string) {
     setPage(value);
     setMobile(false);
+    run(() =>
+      a.patchConfig({
+        surfaceViews: { ...a.config.surfaceViews, [surface]: value },
+      }),
+    );
   }
   const props = { a, run, navigate };
   const current = navigation.find((item) => item.id === page)!;

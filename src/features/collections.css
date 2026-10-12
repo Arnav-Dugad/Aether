@@ -1,0 +1,125 @@
+.collections-surface .collection-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.collections-surface .collection-controls .search-field {
+  flex: 1;
+  min-width: 180px;
+}
+.collection-filters,
+.collection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.collection-filters button[aria-pressed="true"] {
+  background: var(--selected);
+  color: var(--accent-text, var(--accent));
+  border-color: var(--accent-text, var(--accent));
+}
+.collection-card.collection-active {
+  box-shadow:
+    0 0 0 1px var(--accent),
+    var(--shadow);
+}
+.collection-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  margin: 6px 0 12px;
+}
+.collection-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  background: var(--selected);
+  color: var(--accent-text, var(--accent));
+}
+.collections-surface .collection-footer {
+  flex-wrap: wrap;
+}
+.collection-secondary-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.collection-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.collection-editor-tabs {
+  max-height: 260px;
+  overflow: auto;
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.collection-editor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.collection-editor-row:last-child {
+  border-bottom: 0;
+}
+.collection-editor-row span {
+  min-width: 0;
+  flex: 1;
+}
+.collection-editor-row strong,
+.collection-editor-row small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.collection-editor-row strong {
+  font-size: 13px;
+}
+.collection-editor-row small {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.collection-error {
+  color: var(--danger, #d42d38);
+  overflow-wrap: anywhere;
+}
+.collection-compare-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.modal progress {
+  width: 100%;
+  accent-color: var(--accent-text, var(--accent));
+  margin-top: 14px;
+}
+@media (max-width: 600px) {
+  .collection-compare-selects {
+    grid-template-columns: 1fr;
+  }
+  .collection-filters {
+    width: 100%;
+  }
+  .collection-filters .secondary {
+    flex: 1;
+    padding: 8px;
+  }
+  .collections-surface .toolbar {
+    align-items: stretch;
+  }
+  .collection-actions {
+    gap: 6px;
+  }
+}

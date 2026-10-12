@@ -1,0 +1,40 @@
+.command-prefix-help {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 10px 0;
+}
+.command-source-counts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.command-source-counts span {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 3px 8px;
+}
+.command-item .command-result-kind {
+  flex: none;
+  font-size: 10px;
+  color: var(--muted);
+}
+.command-item > span:first-of-type {
+  min-width: 0;
+}
+.command-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 460px) {
+  .command-item .command-result-kind {
+    display: none;
+  }
+  .command-prefix-help {
+    font-size: 10px;
+  }
+}
