@@ -57,6 +57,14 @@ test("bulk pin/undo, URL protection, guarded close, and close undo use actual br
     .getByRole("button", { name: "Undo close 2 tabs", exact: true })
     .click();
   await expect.poll(async () => (await getTabs()).length).toBe(3);
+  await expect
+    .poll(async () =>
+      (await getTabs()).every(
+        (tab) =>
+          tab.status === "complete" && tab.title?.startsWith("Aether fixture"),
+      ),
+    )
+    .toBe(true);
 });
 test("native grouping and move undo preserve tab identity and original group", async () => {
   await page
@@ -73,7 +81,7 @@ test("native grouping and move undo preserve tab identity and original group", a
     .poll(async () => new Set((await getTabs()).map((t) => t.groupId)).size)
     .toBe(1);
   const before = (await getTabs()).find(
-    (t) => t.title === "Aether fixture Beta",
+    (t) => t.url === "https://aether-fixture.test/Beta",
   )!;
   expect(before.groupId).toBeGreaterThanOrEqual(0);
   await page.getByRole("button", { name: "Clear", exact: true }).click();
