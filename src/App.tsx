@@ -231,6 +231,7 @@ export default function App({
               {item.group && <p className="nav-label">{item.group}</p>}
               <button
                 className={`nav-item ${page === item.id ? "selected" : ""}`}
+                aria-label={item.name}
                 aria-current={page === item.id ? "page" : undefined}
                 onClick={() => navigate(item.id)}
               >

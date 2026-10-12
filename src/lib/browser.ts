@@ -8,15 +8,30 @@ import {
 } from "./model";
 import { db } from "./db";
 export const installed = typeof chrome !== "undefined" && !!chrome.runtime?.id;
+let previewConfig = defaults;
+let configWrites = Promise.resolve();
 export async function getConfig(): Promise<Config> {
-  if (!installed) return defaults;
+  if (!installed) return previewConfig;
   const data = await chrome.storage.local.get("config");
   const parsed = configSchema.safeParse(data.config ?? {});
   return parsed.success ? parsed.data : defaults;
 }
 export async function setConfig(config: Config): Promise<void> {
+  if (!installed) previewConfig = configSchema.parse(config);
   if (installed)
     await chrome.storage.local.set({ config: configSchema.parse(config) });
+}
+export function patchStoredConfig(patch: Partial<Config>): Promise<Config> {
+  const write = configWrites.then(async () => {
+    const next = configSchema.parse({ ...(await getConfig()), ...patch });
+    await setConfig(next);
+    return next;
+  });
+  configWrites = write.then(
+    () => {},
+    () => {},
+  );
+  return write;
 }
 export async function getTabs(): Promise<chrome.tabs.Tab[]> {
   return installed

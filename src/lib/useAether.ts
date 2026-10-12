@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { liveQuery } from "dexie";
 import { db } from "./db";
-import { getTabs, getConfig, installed, setConfig } from "./browser";
+import { getTabs, getConfig, installed, patchStoredConfig } from "./browser";
 import {
   defaults,
   type Config,
@@ -13,6 +13,7 @@ import {
   type FocusRecord,
 } from "./model";
 export function useAether() {
+  const pendingConfig = useRef(0);
   const [tabs, setTabs] = useState<chrome.tabs.Tab[]>([]);
   const [config, updateConfig] = useState(defaults);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -54,7 +55,9 @@ export function useAether() {
         .catch((e) => setError(String(e)));
     };
     const refreshStorage = () => {
-      void getConfig().then(updateConfig);
+      void getConfig().then((value) => {
+        if (!pendingConfig.current) updateConfig(value);
+      });
       if (installed)
         void chrome.storage.local
           .get("focus")
@@ -81,11 +84,16 @@ export function useAether() {
     };
   }, []);
   async function patchConfig(patch: Partial<Config>) {
-    const current = await getConfig();
-    const next = { ...current, ...patch };
-    await setConfig(next);
-    updateConfig(next);
+    pendingConfig.current++;
+    updateConfig((current) => ({ ...current, ...patch }));
+    try {
+      await patchStoredConfig(patch);
+    } finally {
+      pendingConfig.current--;
+      if (!pendingConfig.current) updateConfig(await getConfig());
+    }
   }
+
   return {
     tabs,
     config,
