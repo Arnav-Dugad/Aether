@@ -2,7 +2,7 @@ import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { startAether, fixtureTab } from "./support";
 let context: BrowserContext, page: Page, close: () => Promise<void>;
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   ({ context, page, close } = await startAether());
   for (const name of ["Alpha", "Beta", "Gamma"])
     await fixtureTab(context, name);
@@ -13,7 +13,7 @@ test.beforeAll(async () => {
     .fill("Aether fixture");
   await expect(page.locator(".tab-row")).toHaveCount(3);
 });
-test.afterAll(async () => close?.());
+test.afterEach(async () => close?.());
 const getTabs = () =>
   page.evaluate(async () =>
     (await chrome.tabs.query({})).filter((t) =>
@@ -57,23 +57,13 @@ test("bulk pin/undo, URL protection, guarded close, and close undo use actual br
     .getByRole("button", { name: "Undo close 2 tabs", exact: true })
     .click();
   await expect.poll(async () => (await getTabs()).length).toBe(3);
-  // Chrome-created targets can navigate before Playwright attaches request routing.
-  // Reload only test fixture targets so their deterministic test pages are available.
-  for (const target of context.pages()) {
-    if (
-      target.url().startsWith("https://aether-fixture.test/") &&
-      !(await target.title()).startsWith("Aether fixture")
-    )
-      await target.reload();
-  }
   await expect
-    .poll(async () =>
-      (await getTabs()).every(
-        (tab) =>
-          tab.status === "complete" && tab.title?.startsWith("Aether fixture"),
-      ),
-    )
-    .toBe(true);
+    .poll(async () => (await getTabs()).map((tab) => tab.url).sort())
+    .toEqual([
+      "https://aether-fixture.test/Alpha",
+      "https://aether-fixture.test/Beta",
+      "https://aether-fixture.test/Gamma",
+    ]);
 });
 test("native grouping and move undo preserve tab identity and original group", async () => {
   await page
