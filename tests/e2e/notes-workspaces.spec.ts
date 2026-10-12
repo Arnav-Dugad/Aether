@@ -56,16 +56,12 @@ test("workspace editing, active ownership, archive, template, and selective rest
     dialog.getByRole("button", { name: "Open selected tabs" }),
   ).toBeDisabled();
   await dialog.getByRole("button", { name: "Close dialog" }).click();
-  await page
-    .getByRole("button", { name: "Archive", exact: true })
-    .click();
+  await card.getByRole("button", { name: "Archive", exact: true }).click();
   await page.getByRole("button", { name: "Archive", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Deep work", exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Unarchive", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Unarchive", exact: true }).click();
   await page.getByRole("button", { name: "Active", exact: true }).click();
   await page
     .getByRole("button", { name: "Save as template", exact: true })

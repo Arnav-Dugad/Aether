@@ -358,6 +358,7 @@ async function undoLastAction(): Promise<ActionResult> {
   let changed = 0,
     failed = 0;
   const pending: UndoTab[] = [];
+  const failures: string[] = [];
   const restored: { saved: UndoTab; id: number; windowId: number }[] = [];
   for (const saved of [...record.tabs].sort((a, b) => a.index - b.index)) {
     try {
@@ -427,8 +428,9 @@ async function undoLastAction(): Promise<ActionResult> {
       }
       changed++;
       restored.push({ saved, id: restoredId, windowId: restoredWindow });
-    } catch {
+    } catch (error) {
       failed++;
+      failures.push(error instanceof Error ? error.message : String(error));
       pending.push(saved);
     }
   }
@@ -486,6 +488,7 @@ async function undoLastAction(): Promise<ActionResult> {
     });
   else await chrome.storage.session.remove("bulkUndo");
   const result = report(changed, record.tabs.length - changed - failed, failed);
+  if (failures.length) result.message += ` · ${failures[0]}`;
   if (groupWarning)
     result.message += " · some native groups could not be restored";
   return result;

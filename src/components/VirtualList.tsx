@@ -18,12 +18,14 @@ export function VirtualList<T>({
   render,
   label,
   focusable,
+  itemKey,
 }: {
   items: T[];
   rowHeight: number;
   render: (item: T, index: number) => ReactNode;
   label: string;
   focusable?: (item: T) => boolean;
+  itemKey?: (item: T) => string | number;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(0);
@@ -128,7 +130,7 @@ export function VirtualList<T>({
           .map((index) => (
             <div
               className="virtual-row"
-              key={index}
+              key={itemKey ? itemKey(items[index]!) : index}
               data-virtual-index={index}
               role="listitem"
               aria-posinset={index + 1}

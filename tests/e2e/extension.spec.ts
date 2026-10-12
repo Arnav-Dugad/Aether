@@ -129,7 +129,9 @@ test("notes persist and command search supports the keyboard", async () => {
     page.getByText("Local and private.", { exact: true }),
   ).toBeVisible();
   await page.keyboard.press("Control+k");
-  await page.getByRole("combobox").fill("Appearance");
+  await page
+    .getByRole("combobox", { name: "Search commands and tabs" })
+    .fill("Appearance");
   await page.keyboard.press("Enter");
   await expect(
     page.getByRole("heading", { name: "A little more you." }),

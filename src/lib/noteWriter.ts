@@ -58,3 +58,19 @@ export class NoteWriter<T> {
     }
   }
 }
+
+/** Optimistic concurrency compares against what this editor last committed/read,
+ * never against the timestamp assigned to its latest unsaved edit. */
+export function noteWriteDecision<T extends { updatedAt: number }>(
+  stored: T | undefined,
+  baseline: T | null,
+  desired: T,
+  contentFields: readonly (keyof T)[],
+): "write" | "identical" | "conflict" {
+  const same = (a: T, b: T) =>
+    contentFields.every((field) => a[field] === b[field]);
+  if (stored && same(stored, desired)) return "identical";
+  if (!stored) return baseline ? "conflict" : "write";
+  if (!baseline || !same(stored, baseline)) return "conflict";
+  return "write";
+}

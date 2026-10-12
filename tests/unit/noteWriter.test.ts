@@ -91,3 +91,47 @@ describe("note autosave transactions", () => {
     expect(status).toHaveBeenLastCalledWith("saved");
   });
 });
+
+// Editing later must not make a stale editor look newer than the saved baseline.
+describe("note optimistic concurrency", () => {
+  it("detects B saving before A edits and preserves B's content", async () => {
+    const { noteWriteDecision } = await import("../../src/lib/noteWriter");
+    const original = { title: "Initial", body: "Shared", updatedAt: 100 };
+    const editorABaseline = { ...original };
+    const editorBBaseline = { ...original };
+    const editorBEdit = { ...original, body: "B saved this", updatedAt: 200 };
+    expect(
+      noteWriteDecision(original, editorBBaseline, editorBEdit, [
+        "title",
+        "body",
+      ]),
+    ).toBe("write");
+    const stored = { ...editorBEdit };
+    const editorALaterEdit = {
+      ...original,
+      title: "A edits later",
+      updatedAt: 300,
+    };
+    expect(
+      noteWriteDecision(stored, editorABaseline, editorALaterEdit, [
+        "title",
+        "body",
+      ]),
+    ).toBe("conflict");
+    expect(stored.body).toBe("B saved this");
+  });
+  it("advances baseline after own commit and tolerates identical duplicate saves", async () => {
+    const { noteWriteDecision } = await import("../../src/lib/noteWriter");
+    const first = { body: "First", updatedAt: 100 };
+    const committed = { body: "Second", updatedAt: 200 };
+    const next = { body: "Third", updatedAt: 300 };
+    expect(noteWriteDecision(committed, committed, next, ["body"])).toBe(
+      "write",
+    );
+    expect(
+      noteWriteDecision(committed, first, { ...committed, updatedAt: 400 }, [
+        "body",
+      ]),
+    ).toBe("identical");
+  });
+});

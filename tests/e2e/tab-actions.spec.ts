@@ -93,10 +93,11 @@ test("native grouping and move undo preserve tab identity and original group", a
     .getByRole("button", { name: "Undo move 1 tabs", exact: true })
     .click();
   await expect
-    .poll(
-      async () => (await getTabs()).find((t) => t.id === before.id)?.windowId,
-    )
-    .toBe(before.windowId);
+    .poll(async () => ({
+      windowId: (await getTabs()).find((t) => t.id === before.id)?.windowId,
+      result: await page.locator(".action-result").textContent(),
+    }))
+    .toEqual({ windowId: before.windowId, result: "1 changed" });
   await expect
     .poll(
       async () => (await getTabs()).find((t) => t.id === before.id)?.groupId,

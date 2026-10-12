@@ -460,6 +460,7 @@ export function Tabs({ a, run }: FeatureProps) {
             {a.config.tabView === "cards" ? (
               <VirtualList
                 items={cardRows}
+                itemKey={(tabs) => tabs.map((tab) => tab.id).join(":")}
                 rowHeight={178}
                 label="Tab cards"
                 render={(tabs) => (
@@ -478,6 +479,12 @@ export function Tabs({ a, run }: FeatureProps) {
             ) : grouped ? (
               <VirtualList
                 items={grouped}
+                itemKey={(item) =>
+                  item.kind === "heading"
+                    ? `heading:${item.name}`
+                    : item.tab.id!
+                }
+                focusable={(item) => item.kind === "tab"}
                 rowHeight={66}
                 label="Grouped browser tabs"
                 render={(item) =>
@@ -494,6 +501,7 @@ export function Tabs({ a, run }: FeatureProps) {
             ) : (
               <VirtualList
                 items={filtered}
+                itemKey={(tab) => tab.id!}
                 rowHeight={66}
                 label="Browser tabs"
                 render={(tab) => row(tab)}

@@ -11,7 +11,11 @@ import {
 import { db } from "../lib/db";
 import { download, openUrl } from "../lib/browser";
 import { noteSchema, safeUrl, type Note } from "../lib/model";
-import { NoteWriter, type SaveStatus } from "../lib/noteWriter";
+import {
+  NoteWriter,
+  noteWriteDecision,
+  type SaveStatus,
+} from "../lib/noteWriter";
 import type { FeatureProps } from "./types";
 import "./notes.css";
 
@@ -19,6 +23,16 @@ import "./notes.css";
 // This is memory only; browser unload can still lose uncommitted changes.
 const pendingDrafts = new Map<string, Note>();
 const deletedNotes = new Set<string>();
+const pendingBaselines = new Map<string, Note | null>();
+const noteContentFields = [
+  "title",
+  "body",
+  "done",
+  "workspaceId",
+  "url",
+  "priority",
+  "dueDate",
+] as const;
 
 function inlineMarkdown(text: string): ReactNode[] {
   const tokens = text.split(
@@ -119,6 +133,13 @@ function NoteEditor({
   const [confirmLoad, setConfirmLoad] = useState(false);
   const conflictRef = useRef<Note | null>(null);
   const persisted = useRef(existing);
+  const baseline = useRef<Note | null>(
+    pendingBaselines.has(initial.id)
+      ? pendingBaselines.get(initial.id)!
+      : existing
+        ? initial
+        : null,
+  );
   const writer = useRef<NoteWriter<Note> | null>(null);
   if (!writer.current)
     writer.current = new NoteWriter<Note>(
@@ -135,34 +156,42 @@ function NoteEditor({
           throw new Error(
             parsed.error.issues[0]?.message || "Check your note fields.",
           );
-        await db.transaction("rw", db.notes, async () => {
-          if (deletedNotes.has(value.id)) return;
-          const stored = await db.notes.get(value.id);
-          if (stored && stored.updatedAt > value.updatedAt) {
-            const fields = [
-              "title",
-              "body",
-              "done",
-              "workspaceId",
-              "url",
-              "priority",
-              "dueDate",
-            ] as const;
-            const normalized = noteSchema.parse(stored);
-            if (
-              fields.some((field) => normalized[field] !== parsed.data[field])
-            ) {
-              conflictRef.current = normalized;
-              setConflict(normalized);
-              throw new Error(
-                "A newer saved version exists. Your draft has not been saved.",
-              );
+        const committed = await db.transaction("rw", db.notes, async () => {
+          if (deletedNotes.has(value.id)) return null;
+          const storedRow = await db.notes.get(value.id);
+          const stored = storedRow ? noteSchema.parse(storedRow) : undefined;
+          const decision = noteWriteDecision(
+            stored,
+            baseline.current,
+            parsed.data,
+            noteContentFields,
+          );
+          if (decision === "conflict") {
+            if (stored) {
+              conflictRef.current = stored;
+              setConflict(stored);
             }
-          } else await db.notes.put(parsed.data);
+            throw new Error(
+              stored
+                ? "A newer saved version exists. Your draft has not been saved."
+                : "This note was deleted in another editor. Export your draft to keep it.",
+            );
+          }
+          if (decision === "identical") return stored!;
+          await db.notes.put(parsed.data);
+          return parsed.data;
         });
+        if (committed) {
+          baseline.current = committed;
+          if (pendingDrafts.has(value.id))
+            pendingBaselines.set(value.id, committed);
+          else pendingBaselines.delete(value.id);
+        }
         persisted.current = true;
-        if (pendingDrafts.get(value.id) === value)
+        if (pendingDrafts.get(value.id) === value) {
           pendingDrafts.delete(value.id);
+          pendingBaselines.delete(value.id);
+        }
       },
       (next, failure) => {
         setStatus(next);
@@ -200,6 +229,7 @@ function NoteEditor({
     };
     setDraft(next);
     pendingDrafts.set(next.id, next);
+    pendingBaselines.set(next.id, baseline.current);
     writer.current!.queue(next);
   };
   const close = async (saveEmpty = false) => {
@@ -219,6 +249,7 @@ function NoteEditor({
       deletedNotes.add(draft.id);
       await writer.current!.remove(() => db.notes.delete(draft.id));
       pendingDrafts.delete(draft.id);
+      pendingBaselines.delete(draft.id);
       onClose();
     } catch {
       deletedNotes.delete(draft.id);
@@ -237,8 +268,10 @@ function NoteEditor({
         );
       const saved = noteSchema.parse(stored);
       pendingDrafts.delete(draft.id);
+      pendingBaselines.delete(draft.id);
       writer.current = null;
       conflictRef.current = null;
+      baseline.current = saved;
       setDraft(saved);
       setConflict(null);
       setConfirmLoad(false);
@@ -460,6 +493,20 @@ function NoteEditor({
             }}
           >
             Retry saving
+          </button>
+        )}
+        {status === "error" && !conflict && (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() =>
+              download(
+                `aether-note-draft-${draft.id}.json`,
+                JSON.stringify(draft, null, 2),
+              )
+            }
+          >
+            Export my draft
           </button>
         )}
         <div className="button-row">
