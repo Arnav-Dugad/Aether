@@ -14,6 +14,7 @@ import {
 } from "./model";
 export function useAether() {
   const pendingConfig = useRef(0);
+  const configRevision = useRef(0);
   const [tabs, setTabs] = useState<chrome.tabs.Tab[]>([]);
   const [config, updateConfig] = useState(defaults);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -55,8 +56,10 @@ export function useAether() {
         .catch((e) => setError(String(e)));
     };
     const refreshStorage = () => {
+      const revision = configRevision.current;
       void getConfig().then((value) => {
-        if (!pendingConfig.current) updateConfig(value);
+        if (!pendingConfig.current && revision === configRevision.current)
+          updateConfig(value);
       });
       if (installed)
         void chrome.storage.local
@@ -84,13 +87,18 @@ export function useAether() {
     };
   }, []);
   async function patchConfig(patch: Partial<Config>) {
+    const revision = ++configRevision.current;
     pendingConfig.current++;
     updateConfig((current) => ({ ...current, ...patch }));
     try {
       await patchStoredConfig(patch);
     } finally {
       pendingConfig.current--;
-      if (!pendingConfig.current) updateConfig(await getConfig());
+      if (!pendingConfig.current) {
+        const saved = await getConfig();
+        if (!pendingConfig.current && revision === configRevision.current)
+          updateConfig(saved);
+      }
     }
   }
 
