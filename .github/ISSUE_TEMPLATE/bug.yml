@@ -1,0 +1,14 @@
+name: Bug report
+description: Report a reproducible issue in Aether
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Include expected behavior and steps to reproduce. Do not include private browsing data.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Browser, OS, Aether version
+    validations:
+      required: true

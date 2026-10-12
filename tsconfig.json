@@ -1,0 +1,10 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["chrome", "vite/client", "node"],
+    "jsx": "react-jsx"
+  },
+  "exclude": ["node_modules", ".output"]
+}

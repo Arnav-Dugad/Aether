@@ -1,0 +1,58 @@
+name: Validate and release
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: node scripts/package.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aether-chromium
+          path: dist/*
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-evidence
+          path: test-results/
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: aether-chromium
+          path: dist
+      - name: Publish this version once
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(node -p "JSON.parse(require('fs').readFileSync('package.json')).version")
+          tag="v$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; leaving it unchanged."
+            exit 0
+          fi
+          git archive --format=zip HEAD -o "dist/aether-source-$tag.zip"
+          cd dist
+          sha256sum "aether-source-$tag.zip" >> SHA256SUMS.txt
+          cd ..
+          gh release create "$tag" --target "$GITHUB_SHA" --title "Aether $tag — Frosted glass foundation" --notes-file CHANGELOG.md dist/*
