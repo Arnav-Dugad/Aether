@@ -1,5 +1,15 @@
 # Validation evidence
 
+## 0.3.0 Windows validation
+
+- Node.js/npm in the user's Windows workspace; strict TypeScript and ESLint pass.
+- 43 Vitest logic tests pass, including local calendar ranges, nonoverlapping comparisons, missing-data behavior, focus completion-day attribution/streaks, and migration of new preferences.
+- Native Chromium tests cover priorities backed by Notes, complete/reopen/persistence, preset persistence, immersive keyboard dismissal, timer persistence after reload, range controls, new preference persistence, and populated charts/range-filtered CSV downloads, alongside the existing tabs/workspaces/notes suite.
+- The loaded MV3 extension was exercised using an existing full Chromium installation through `AETHER_CHROMIUM_EXECUTABLE`. CI uses the Playwright-managed Chromium binary. Set this environment variable only when testing with another installed full Chromium executable.
+- `scripts/visual-check.mjs` reports zero page errors, zero horizontal overflow, and zero WCAG-tagged axe violations for tested app/newtab/popup/sidepanel views. Light/dark/Focus/Insights screenshots were rendered and inspected. Automated checks do not certify every accessibility scenario or browser.
+- Production packaging uses Node ZIP creation, validates matching manifest/package versions, emits a root-level manifest and SHA-256 checksum, and does not require Python.
+- Older validation evidence below refers to prior releases; current GitHub Actions evidence is linked with the release delivery.
+
 ## Executed locally
 
 - Node.js 24.19.0, npm 11.9.0, Linux container.

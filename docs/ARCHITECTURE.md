@@ -7,10 +7,12 @@ WXT builds four React-owned HTML entrypoints and an event-driven MV3 background 
 - `src/components/`: semantic reusable panels/fields, browser tab list, native modal dialogs, command search, error boundary.
 - `src/lib/`: typed browser adapter, Zod schemas and URL safeguards, IndexedDB database, React subscriptions, foreground accounting, and accent contrast calculations.
 - `src/styles/glass.css`: centralized theme/material tokens and responsive layout.
+- `src/styles/premium.css`: editorial dashboard, orbital illustration, chart/focus motion, and responsive refinements.
+- `src/lib/insights.ts`: local calendar ranges, domain aggregation, baseline comparisons, and completion-day focus streaks.
 
 ## Material design
 
-Static original vector scenery supplies the background. Surface tint and blur are configurable independently through material alpha and blur tokens. Typical frosting is about 25px, with saturation kept modest. Cards have no animated lensing, refraction, specular overlays, or continuous animation. Sidebar, search bar, panels, and dialogs share this material family.
+Local CSS gradients supply the background. Surface tint and blur are configurable independently through material alpha and blur tokens. Typical frosting is about 25px, with saturation kept modest. Sidebar, search bar, panels, and dialogs share this material family. Decorative orbital/breathing motion animates transforms and opacity; there is no animated lensing, refraction, or reflective surface animation.
 
 Opaque mode and OS reduced-transparency settings remove frosting; high contrast strengthens text/borders and uses opaque materials. Unsupported backdrop filters fall back to opaque surfaces. Modal opening animates transform/opacity only and honors reduced motion. Fonts use native system stacks; Apple's proprietary fonts are not redistributed.
 
@@ -23,6 +25,8 @@ The worker registers event listeners at startup. Tab activation/navigation, focu
 Live workspace assignments and the last supported tab undo record use browser session storage. A browser restart clears those associations; persistent saved URLs remain. Tab mutations and cross-surface preference changes run through validated, extension-owned messages serialized by the worker. Virtualized rows keep the rendered tree bounded for large collections.
 
 Focus completion uses a saved end timestamp and a browser alarm. The UI refreshes its displayed clock while open, and completed sessions are inserted with a stable timestamp key to avoid duplicate history rows.
+
+Daily priorities reuse Notes with due dates and completion flags, so portable backups include them without a database migration. Calendar aggregation is memoized by local day and record changes, independently of the one-second timer refresh. Activity charts fill missing days with zero; period comparisons use consecutive calendar windows and include today's partial day. Focus streaks use completion dates and allow yesterday as their endpoint until today's first completed session.
 
 ## Boundaries
 

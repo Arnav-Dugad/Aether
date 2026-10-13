@@ -1,6 +1,6 @@
 {
   "name": "aether",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -24,6 +24,7 @@
     "zod": "4.0.0"
   },
   "devDependencies": {
+    "@aklinker1/zero-zip": "1.0.1",
     "@axe-core/playwright": "4.11.0",
     "@eslint/js": "9.39.0",
     "@playwright/test": "1.58.0",

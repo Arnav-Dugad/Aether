@@ -94,6 +94,8 @@ export const configSchema = z.object({
   reducedTransparency: z.boolean().default(false),
   highContrast: z.boolean().default(false),
   compact: z.boolean().default(false),
+  reducedMotion: z.boolean().default(false),
+  dailyFocusGoal: z.number().int().min(15).max(480).default(120),
   name: z.string().max(50).default(""),
   tracking: z.boolean().default(false),
   autoSnapshot: z.boolean().default(false),

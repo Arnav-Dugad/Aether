@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- Redesign Overview with refined glass, editorial typography, animated orbital art, browser summary, and a connected launchpad.
+- Add daily priorities backed by Notes, with overdue visibility and complete/reopen controls.
+- Add focus presets, daily goals, completion-day streaks, weekly consistency, and immersive focus.
+- Extend Insights with 7/30/90-day ranges, averages, baseline comparisons, website shares, range-aware CSV, and a 91-day activity map.
+- Add persistent Reduce motion, polish interactions, respect system motion preferences, and correct Windows keyboard hints.
+- Replace Python packaging with cross-platform Node ZIP creation; validate native workflows on Windows and refresh screenshot evidence.
+- Maintain release notes and a 60-item proposed premium roadmap.
+
 ## 0.2.0
 
 - Add virtualized multi-select tab management, list/card/domain/window layouts, sorting, URL labels/favorites/protection, guarded bulk pin/move/group/assign/close/discard, and supported undo.

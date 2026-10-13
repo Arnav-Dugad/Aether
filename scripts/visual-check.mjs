@@ -2,14 +2,15 @@ import { chromium } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdirSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
-import { resolve, extname } from "node:path";
+import { resolve, extname, relative, isAbsolute } from "node:path";
 const buildRoot = resolve(".output/chrome-mv3");
 const server = createServer((request, response) => {
   const path = resolve(
     buildRoot,
     "." + new URL(request.url, "http://localhost").pathname,
   );
-  if (!path.startsWith(buildRoot + "/")) {
+  const within = relative(buildRoot, path);
+  if (within.startsWith("..") || isAbsolute(within)) {
     response.writeHead(403).end();
     return;
   }
@@ -48,15 +49,24 @@ await page.goto("http://127.0.0.1:4179/app.html");
 await page
   .getByRole("heading", { name: /Good (morning|afternoon|evening)/ })
   .waitFor();
-await page.screenshot({ path: "docs/screenshots/overview.png" });
+await page.screenshot({
+  path: "docs/screenshots/overview.png",
+  fullPage: true,
+  animations: "disabled",
+});
 await page.getByRole("button", { name: "Appearance", exact: true }).click();
 await page.getByRole("heading", { name: "Make it feel like you" }).waitFor();
 await page.screenshot({
   path: "docs/screenshots/appearance.png",
   fullPage: true,
+  animations: "disabled",
 });
 await page.getByRole("button", { name: "Obsidian", exact: true }).click();
-await page.screenshot({ path: "docs/screenshots/dark.png", fullPage: true });
+await page.screenshot({
+  path: "docs/screenshots/dark.png",
+  fullPage: true,
+  animations: "disabled",
+});
 const results = await new AxeBuilder({ page })
   .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
   .analyze();
@@ -100,9 +110,32 @@ for (const surface of ["app", "newtab", "popup", "sidepanel"]) {
     await view.screenshot({
       path: "docs/screenshots/popup.png",
       fullPage: true,
+      animations: "disabled",
     });
   await view.close();
 }
+await page.getByRole("button", { name: "Overview", exact: true }).click();
+await page.screenshot({
+  path: "docs/screenshots/dark-overview.png",
+  fullPage: true,
+  animations: "disabled",
+});
+await page.getByRole("button", { name: "Focus", exact: true }).click();
+await page.getByRole("heading", { name: "Make room for deep work." }).waitFor();
+await page.screenshot({
+  path: "docs/screenshots/focus.png",
+  fullPage: true,
+  animations: "disabled",
+});
+await page.getByRole("button", { name: "Insights", exact: true }).click();
+await page
+  .getByRole("heading", { name: "Small moments, a bigger picture" })
+  .waitFor();
+await page.screenshot({
+  path: "docs/screenshots/insights.png",
+  fullPage: true,
+  animations: "disabled",
+});
 console.log("Page errors:", errors);
 await browser.close();
 server.close();

@@ -5,7 +5,7 @@ import {
   writeFileSync,
   statSync,
 } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { createZip } from "@aklinker1/zero-zip";
 import { createHash } from "node:crypto";
 import { resolve, relative } from "node:path";
 const version = JSON.parse(readFileSync("package.json", "utf8")).version;
@@ -23,12 +23,22 @@ for (const file of [
   if (!statSync(`${root}/${file}`).isFile()) throw new Error(`Missing ${file}`);
 mkdirSync("dist", { recursive: true });
 const target = resolve(`dist/aether-chromium-v${version}.zip`);
-execFileSync("python3", [
-  "-c",
-  'import pathlib,sys,zipfile; root=pathlib.Path(sys.argv[1]); z=zipfile.ZipFile(sys.argv[2],"w",zipfile.ZIP_DEFLATED); [z.write(p,p.relative_to(root)) for p in sorted(root.rglob("*")) if p.is_file()]; z.close()',
-  root,
-  target,
-]);
+const archive = createZip({ level: 9 });
+function addDirectory(directory) {
+  for (const entry of readdirSync(directory, { withFileTypes: true }).sort(
+    (a, b) => a.name.localeCompare(b.name),
+  )) {
+    const path = resolve(directory, entry.name);
+    if (entry.isDirectory()) addDirectory(path);
+    else if (entry.isFile())
+      archive.addFile(
+        relative(root, path).replaceAll("\\", "/"),
+        readFileSync(path),
+      );
+  }
+}
+addDirectory(root);
+writeFileSync(target, await archive.toBuffer());
 const hash = createHash("sha256").update(readFileSync(target)).digest("hex");
 writeFileSync(
   "dist/SHA256SUMS.txt",

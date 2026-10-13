@@ -12,6 +12,7 @@ export async function startAether(): Promise<{
   const extension = resolve(".output/chrome-mv3");
   const context = await chromium.launchPersistentContext(profile, {
     channel: "chromium",
+    executablePath: process.env.AETHER_CHROMIUM_EXECUTABLE || undefined,
     headless: true,
     viewport: { width: 1440, height: 1000 },
     args: [

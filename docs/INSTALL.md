@@ -1,6 +1,6 @@
 # Install and update
 
-Download only from [official Aether releases](https://github.com/Arnav-Dugad/Aether/releases). Extract `aether-chromium-v0.2.0.zip` to a permanent folder before installing; `manifest.json` must be at that folder's root.
+Download only from [official Aether releases](https://github.com/Arnav-Dugad/Aether/releases). Extract `aether-chromium-v0.3.0.zip` to a permanent folder before installing; `manifest.json` must be at that folder's root.
 
 1. Open Chrome `chrome://extensions`, Edge `edge://extensions`, or Brave `brave://extensions`.
 2. Enable Developer mode.
@@ -17,7 +17,7 @@ Export a backup in Privacy & data. Download the newer ZIP, replace the contents 
 The Updates page checks official GitHub release metadata after you grant optional GitHub access. Downloads are ordinary official links. The UI does not claim observable download progress, checksum validation, or installation completion. Verify `SHA256SUMS.txt` yourself if desired:
 
 ```powershell
-Get-FileHash .\aether-chromium-v0.2.0.zip -Algorithm SHA256
+Get-FileHash .\aether-chromium-v0.3.0.zip -Algorithm SHA256
 ```
 
 Store distribution can use native browser-managed updates in a future release. An unpacked extension cannot silently replace its executable code.

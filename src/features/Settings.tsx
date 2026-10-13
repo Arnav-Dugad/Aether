@@ -102,6 +102,12 @@ export function Settings({ a, run }: FeatureProps) {
           checked={a.config.compact}
           onChange={(value) => patch({ compact: value })}
         />
+        <Toggle
+          label="Reduce motion"
+          detail="Keep the interface still. Your system motion preference is also respected."
+          checked={a.config.reducedMotion}
+          onChange={(value) => patch({ reducedMotion: value })}
+        />
       </Panel>
       <div className="stack">
         <Panel title="The little details" label="PERSONALIZATION">
@@ -132,6 +138,21 @@ export function Settings({ a, run }: FeatureProps) {
             checked={a.config.autoSnapshot}
             onChange={(value) => patch({ autoSnapshot: value })}
           />
+          <Field label="Daily focus goal">
+            <select
+              value={a.config.dailyFocusGoal}
+              aria-label="Daily focus goal"
+              onChange={(event) =>
+                patch({ dailyFocusGoal: Number(event.target.value) })
+              }
+            >
+              {[30, 60, 90, 120, 180, 240].map((value) => (
+                <option key={value} value={value}>
+                  {value} minutes
+                </option>
+              ))}
+            </select>
+          </Field>
         </Panel>
         <Panel title="Your dashboard" label="WIDGETS">
           <p className="caption">

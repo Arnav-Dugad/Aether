@@ -16,6 +16,7 @@ test.beforeAll(async () => {
   const extension = resolve(".output/chrome-mv3");
   context = await chromium.launchPersistentContext(profile, {
     channel: "chromium",
+    executablePath: process.env.AETHER_CHROMIUM_EXECUTABLE || undefined,
     headless: true,
     args: [
       `--disable-extensions-except=${extension}`,

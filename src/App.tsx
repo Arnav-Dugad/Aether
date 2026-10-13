@@ -39,6 +39,7 @@ const Tabs = lazy(() =>
 import { CommandPalette } from "./components/CommandPalette";
 import { Field, Modal, Panel } from "./components/ui";
 import "./styles/glass.css";
+import "./styles/premium.css";
 const Collections = lazy(() =>
   import("./features/Collections").then((m) => ({ default: m.Collections })),
 );
@@ -213,6 +214,7 @@ export default function App({
       data-theme={a.config.theme}
       data-opaque={a.config.reducedTransparency}
       data-contrast={a.config.highContrast}
+      data-motion={a.config.reducedMotion ? "reduced" : "full"}
       style={style}
       aria-busy={busy > 0}
     >
@@ -243,7 +245,7 @@ export default function App({
         <button className="sidebar-search" onClick={() => setPalette(true)}>
           <Search size={15} />
           <span>Quick search</span>
-          <kbd>⌘ K</kbd>
+          <kbd>{navigator.platform.includes("Mac") ? "⌘ K" : "Ctrl K"}</kbd>
         </button>
         <nav aria-label="Main navigation">
           {navigation.map((item) => (
@@ -300,7 +302,7 @@ export default function App({
             >
               <Command size={14} />
               <span>Command search</span>
-              <kbd>⌘ K</kbd>
+              <kbd>{navigator.platform.includes("Mac") ? "⌘ K" : "Ctrl K"}</kbd>
             </button>
             {surface !== "app" && (
               <button

@@ -6,7 +6,7 @@ A local-first Chromium extension that brings your tabs, saved spaces, focus, and
 
 ![Aether overview](docs/screenshots/overview.png)
 
-**Version 0.2.0 continues the functional release series.** The original product brief is a long-term roadmap, not a claim that every requested feature is complete. See [feature status and limitations](docs/STATUS.md) and [validation evidence](docs/TESTING.md).
+**Version 0.3.0 brings a clearer day:** a redesigned dashboard, daily priorities, richer private insights, and immersive focus. See [release notes](docs/RELEASE_NOTES.md), [feature status](docs/STATUS.md), [validation evidence](docs/TESTING.md), and the [60-item premium roadmap](docs/ROADMAP.md).
 
 [Download releases](https://github.com/Arnav-Dugad/Aether/releases) · [Install](docs/INSTALL.md) · [Privacy](PRIVACY.md) · [Architecture](docs/ARCHITECTURE.md)
 
@@ -16,8 +16,10 @@ A local-first Chromium extension that brings your tabs, saved spaces, focus, and
 - **Tabs that work:** virtualized multi-select lists/cards/domain/window views, labels/favorites/protection, sorting, bulk actions, supported undo, duplicates, and recovery.
 - **A place for your work:** editable workspaces, live ownership/filtering, archives/templates, and comparable session snapshots with selective multi-window restore and genuine progress. Private and internal pages are excluded.
 - **Local productivity:** autosaved notes, safe Markdown preview, workspace/URL context, priorities/due dates, and durable focus timers.
-- **Real insights:** optional domain-level foreground tracking and a seven-day activity chart. No fabricated activity or per-tab RAM claims.
-- **Appearance, instantly:** Light, Obsidian, Graphite, OLED, and System themes; custom accents, glass strength, compact spacing, high contrast, and reduced transparency.
+- **A more intentional day:** add and complete daily priorities from Overview, keep overdue items visible, and edit the same records in Notes.
+- **Room to focus:** quick duration presets, daily goals, streaks, weekly consistency, and an immersive view with calm breathing motion.
+- **Real insights:** optional domain-level foreground tracking, 7/30/90-day charts, website shares, baseline comparisons, range-aware CSV, and a 91-day activity map. No fabricated activity or per-tab RAM claims.
+- **Appearance, instantly:** Light, Obsidian, Graphite, OLED, and System themes; custom accents, glass strength, compact spacing, high contrast, reduced transparency, and reduced motion.
 - **Local universal search:** fuzzy indexed tabs, labels, workspaces, sessions, notes, and already-permitted bookmarks/history; prefixes and recent selections. Browser sources require an explicit permission request in their own views.
 - **Transparent updates:** manual GitHub release checks, genuine release notes, and official package links.
 - **Keep your data:** validated portable backup import/export, CSV activity export, permission revocation, and local deletion.
@@ -28,7 +30,7 @@ Screenshots show the real built UI served locally for layout verification. Brows
 
 ## Install
 
-1. Download `aether-chromium-v0.2.0.zip` from [Releases](https://github.com/Arnav-Dugad/Aether/releases).
+1. Download `aether-chromium-v0.3.0.zip` from [Releases](https://github.com/Arnav-Dugad/Aether/releases).
 2. Extract it to a permanent folder.
 3. Open `chrome://extensions`, `edge://extensions`, or `brave://extensions`.
 4. Enable **Developer mode**, choose **Load unpacked**, and select the extracted folder containing `manifest.json`.

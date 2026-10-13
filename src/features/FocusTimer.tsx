@@ -10,6 +10,7 @@ export function FocusTimer({
   mini = false,
 }: FeatureProps & { mini?: boolean }) {
   const [goal, setGoal] = useState("");
+  const [starting, setStarting] = useState(false);
   const seconds = remaining(a.focus, a.now);
   const full = a.focus
     ? (a.focus.endsAt - a.focus.startedAt) / 1000
@@ -47,34 +48,61 @@ export function FocusTimer({
               : "Set an intention. Let everything else wait."}
           </p>
           {!a.focus && (
-            <Field label="What are you working on?">
-              <input
-                maxLength={160}
-                placeholder="e.g. Finish the first draft"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-              />
-            </Field>
+            <>
+              <div
+                className="focus-presets"
+                role="group"
+                aria-label="Focus duration presets"
+              >
+                {[15, 25, 45, 60].map((minutes) => (
+                  <button
+                    key={minutes}
+                    aria-label={`${minutes} minutes`}
+                    disabled={starting}
+                    aria-pressed={a.config.focusMinutes === minutes}
+                    onClick={() =>
+                      run(() => a.patchConfig({ focusMinutes: minutes }))
+                    }
+                  >
+                    {minutes}
+                    <small>min</small>
+                  </button>
+                ))}
+              </div>
+              <Field label="What are you working on?">
+                <input
+                  maxLength={160}
+                  placeholder="e.g. Finish the first draft"
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                />
+              </Field>
+            </>
           )}
         </>
       )}
       <button
-        disabled={!installed}
+        disabled={!installed || starting}
         className={a.focus ? "secondary" : "primary"}
         onClick={() =>
           run(
             async () => {
-              if (a.focus) {
-                await chrome.storage.local.remove("focus");
-                await chrome.alarms.clear("focus");
-              } else {
-                const startedAt = Date.now();
-                const endsAt = startedAt + a.config.focusMinutes * 60000;
-                await chrome.storage.local.set({
-                  focus: { startedAt, endsAt, goal },
-                });
-                await chrome.alarms.create("focus", { when: endsAt });
-                await chrome.action.setBadgeText({ text: "" });
+              setStarting(true);
+              try {
+                if (a.focus) {
+                  await chrome.storage.local.remove("focus");
+                  await chrome.alarms.clear("focus");
+                } else {
+                  const startedAt = Date.now();
+                  const endsAt = startedAt + a.config.focusMinutes * 60000;
+                  await chrome.storage.local.set({
+                    focus: { startedAt, endsAt, goal },
+                  });
+                  await chrome.alarms.create("focus", { when: endsAt });
+                  await chrome.action.setBadgeText({ text: "" });
+                }
+              } finally {
+                setStarting(false);
               }
             },
             a.focus ? "Focus session stopped" : "Focus session started",

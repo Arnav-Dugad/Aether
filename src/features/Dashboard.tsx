@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowUpRight,
   Search,
@@ -10,12 +10,17 @@ import {
   Archive,
   BarChart3,
   FileText,
+  Target,
+  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { Panel, Empty, LinkButton } from "../components/ui";
 import { TabList } from "../components/TabList";
 import { FocusTimer } from "./FocusTimer";
 import { installed, permission, openUrl } from "../lib/browser";
 import { duration, localDay } from "../lib/model";
+import { focusSummary, activitySummary } from "../lib/insights";
+import { DayPlanner } from "./DayPlanner";
 import type { FeatureProps } from "./types";
 export function Dashboard({
   a,
@@ -30,6 +35,15 @@ export function Dashboard({
   const today = a.activity
     .filter((row) => row.day === localDay(a.now))
     .reduce((sum, row) => sum + row.seconds, 0);
+  const calendarNow = new Date(localDay(a.now) + "T12:00:00").getTime();
+  const focus = useMemo(
+    () => focusSummary(a.focusHistory, calendarNow),
+    [a.focusHistory, calendarNow],
+  );
+  const week = useMemo(
+    () => activitySummary(a.activity, calendarNow, 7),
+    [a.activity, calendarNow],
+  );
   async function search() {
     if (!query.trim()) return;
     let value = query.trim();
@@ -209,7 +223,7 @@ export function Dashboard({
                 const seconds = a.activity
                   .filter((r) => r.day === day)
                   .reduce((n, r) => n + r.seconds, 0);
-                const max = Math.max(60, ...a.activity.map((r) => r.seconds));
+                const max = Math.max(60, ...week.days.map((r) => r.seconds));
                 return (
                   <span
                     key={day}
@@ -290,6 +304,15 @@ export function Dashboard({
   return (
     <>
       <section className="dashboard-hero">
+        <div className="hero-orbit" aria-hidden="true">
+          <div />
+          <div />
+          <span className="orbit-core">
+            <Sparkles size={34} strokeWidth={1} />
+          </span>
+          <i />
+          <i />
+        </div>
         <div className="hero-time">
           <span>
             {new Date(a.now).toLocaleDateString(undefined, {
@@ -305,12 +328,14 @@ export function Dashboard({
             })}
           </time>
         </div>
-        <span className="eyebrow">YOUR BROWSER. ELEVATED.</span>
+        <span className="eyebrow hero-badge">
+          <span className="status-dot" /> A LITTLE SPACE FOR BIG IDEAS
+        </span>
         <h1>
           {greeting}
           {a.config.name ? `, ${a.config.name}` : ""}.
         </h1>
-        <p>A clear space. A fresh perspective.</p>
+        <p>Less noise. More possibility. Make room for what matters.</p>
         <form
           className="hero-search"
           onSubmit={(e) => {
@@ -348,6 +373,97 @@ export function Dashboard({
           Local-first. Yours, always.
         </div>
       </section>
+      <div className="overview-strip" aria-label="Your browser at a glance">
+        <button onClick={() => navigate?.("tabs")}>
+          <Layers size={19} />
+          <span>
+            <strong>{a.tabs.length}</strong>
+            <small>Open tabs</small>
+          </span>
+          <ArrowUpRight size={14} />
+        </button>
+        <button onClick={() => navigate?.("workspaces")}>
+          <Briefcase size={19} />
+          <span>
+            <strong>
+              {
+                a.workspaces.filter((row) => !row.archived && !row.template)
+                  .length
+              }
+            </strong>
+            <small>Active spaces</small>
+          </span>
+          <ArrowUpRight size={14} />
+        </button>
+        <button onClick={() => navigate?.("focus")}>
+          <Target size={19} />
+          <span>
+            <strong>{duration(focus.today)}</strong>
+            <small>Focus today</small>
+          </span>
+          <ArrowUpRight size={14} />
+        </button>
+        <button onClick={() => navigate?.("privacy")}>
+          <ShieldCheck size={19} />
+          <span>
+            <strong>Only yours</strong>
+            <small>Stored on this device</small>
+          </span>
+          <ArrowUpRight size={14} />
+        </button>
+      </div>
+      <div className="dashboard-section-heading">
+        <div>
+          <span className="eyebrow">THE EVERYDAY, REIMAGINED</span>
+          <h2>Your personal command center</h2>
+        </div>
+        <button className="text-button" onClick={() => navigate?.("settings")}>
+          Customize <ArrowUpRight size={14} />
+        </button>
+      </div>
+      <div className="daily-layout">
+        <DayPlanner a={a} run={run} navigate={navigate} />
+        <Panel
+          className="launchpad"
+          title="A better flow starts here"
+          label="SMALL ACTIONS. MORE CLARITY."
+        >
+          <button onClick={() => navigate?.("focus")}>
+            <span className="launch-icon">
+              <Target size={20} />
+            </span>
+            <span>
+              <strong>Find your focus</strong>
+              <small>
+                {focus.streak
+                  ? `${focus.streak}-day streak. Keep the momentum.`
+                  : "A quiet moment for your next big thing."}
+              </small>
+            </span>
+            <ArrowRight size={17} />
+          </button>
+          <button onClick={() => navigate?.("suggestions")}>
+            <span className="launch-icon">
+              <Sparkles size={20} />
+            </span>
+            <span>
+              <strong>Clear the clutter</strong>
+              <small>Discover ways to organize your tabs.</small>
+            </span>
+            <ArrowRight size={17} />
+          </button>
+          <button onClick={command}>
+            <span className="launch-icon">
+              <Command size={20} />
+            </span>
+            <span>
+              <strong>Everything, a keystroke away</strong>
+              <small>Search your tabs, notes, and spaces.</small>
+            </span>
+            <ArrowRight size={17} />
+          </button>
+        </Panel>
+      </div>
       <div className="dashboard-grid">
         {a.config.widgets.map((key) => (
           <div className={`widget widget-${key}`} key={key}>
